@@ -1,6 +1,6 @@
 module Trailblazer::Rails
   module Controller
-    def run(operation, params=self.params.clone.permit!, *dependencies)
+    def run(operation, params=_unsafe_params, *dependencies)
       result = operation.({params: _run_params(params) }.merge(*_run_runtime_options(*dependencies)))
 
       @model = result[:model]
@@ -27,6 +27,15 @@ module Trailblazer::Rails
     # into the runtime options.
     def _run_options(options)
       options
+    end
+
+    def _unsafe_params
+      case params.class.to_s
+        when 'ActionController::Parameters'
+          params.to_unsafe_hash
+        else
+          params
+      end
     end
 
     module Result
